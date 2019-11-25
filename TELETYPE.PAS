@@ -369,7 +369,7 @@ implementation
 
   function ColorAdapter: boolean;
     var
-      VideoPort: word absolute $0:$463;
+      VideoPort: word absolute $463;
     begin
       ColorAdapter := VideoPort = $3D4;
     end;
