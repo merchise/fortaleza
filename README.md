@@ -10,7 +10,7 @@ You can read more about them here:
 
 ## Building
 
-There is an [open issue](#2) for tracking progress trying to build this repo.
+There is an open issue (GH-2)for tracking progress trying to build this repo.
 
 If you want to play it, there are EXE builds available in a third party site:
 
