@@ -10,7 +10,7 @@ You can read more about them here:
  * [Fortaleza 1][3] (in Spanish)
 
 Copyright:
-  (c) 1993 - 2013 Miguel Cepero
+  (c) 1992 - 2013 Miguel Cepero
 
 License:
   GPLv3+ (see COPYING for details).
