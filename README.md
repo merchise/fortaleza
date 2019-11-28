@@ -10,7 +10,7 @@ You can read more about them here:
 
 ## Building
 
-There is an open issue (GH-2)for tracking progress trying to build this repo.
+There is an [open issue][6] for tracking progress trying to build this repo.
 
 If you want to play it, there are EXE builds available in a third party site:
 
@@ -32,3 +32,4 @@ License:
  [3]: http://wiki.caad.es/La_fortaleza_I:_En_las_entra%C3%B1as_de_la_bestia
  [4]: https://www.caad.es/?q=node/878
  [5]: https://www.caad.es/?q=node/879
+ [6]: https://github.com/merchise/fortaleza/issues/2
