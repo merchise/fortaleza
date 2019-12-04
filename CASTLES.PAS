@@ -793,76 +793,554 @@ implementation
 			  if t^.mase = 1
 			    then s := s + ' bolsa.'
 			    else s := s + ' bolsas.';
-			  Output( 'Usted coloca el objeto en else s := s + ' b      if (typeof(t^) = typeof(Thing)) and (t^.mase <= LWeight)
-                  then
-		    if upper(t^.name^) <> 'BA              end
-              (t^) = typeof(Thing)) and (t^.mase <= LWeight)
-      
-             (typeof( link^ se <= LW  end;
-
-  procedure Man.OpenD( door, key: string );
-    begin
-      if dead
-        then exit;
-      if key <> ''
- 1t );
-    begin
-      if dead
- eseDnk^.D    Pt1lsa.'
-			    else s := s + ' bolsas.';
-			  O   el	'
-
-                  if whatP se s := s  if  dead
-        then exit;
-      if k	s := bolsa.'
-			    else s := s + ' bols
-			in
-  if upp            if k	s := bolse
-			    then s := s + ' bolsa.'
-	sn;
-
-          Regs.AH := $08;
-       thenf      then exit;
-      if k	s hatP se s := s  if  dead
-        then    th          :2  if k	s
-  p'
-			  nil  if  de (t^
-        then exit;
-      if k	s v     Rese s := s  if  dead
-     af
-     af dexit;
-
-       thenf      then exit;
-      if k	s if k	s ifsth   aption
+			  Output( 'Usted coloca el objeto en el plato de la balanza.'#13+
+				 'La aguja indica ' + s );
+			end
+		      else Output( 'Usted trata infructuosamente de colocar la balanza sobre ella misma.'  )
+		  else Output( '­Se ha vuelto loco! ¨C¢mo va a pesar eso?' )
+	      else
+		if what = ''
+		  then Output( _Complete )
+		  else Output( 'No hay "' + what + '" en este lugar. Ni en sus pertenencias tampoco.' )
+          end
+        else Output( 'Usted no trae la balanza.' );
     end;
 
-  procedure Man.Drink( what: string );
+  procedure Man.LeaveAll;
+    var
+      i: integer;
+      t: PThing;
+    begin
+     if bag^.count = 0
+       then Output( _Your_bag_is_empty )
+       else
+         begin
+           while bag^.count <> 0 do
+             begin
+	       t := bag^.At(0);
+               curr^.Insert( t );
+               bag^.Delete( t );
+             end;
+           Output( _You_let_your_bag_empty )
+         end;
+    end;
+
+  { Troll }
+
+  constructor Troll.Init( nm, ds, lk, hD, lD: string );
+    begin
+      Thing.Init( nm, ds, 100 );
+      likeness := newStr( lk );
+      hiData   := newStr( hD );
+      lowData  := newStr( lD );
+      happy    := FALSE;
+    end;
+
+  destructor Troll.Done;
+    begin
+      disposeStr( likeness );
+      disposeStr( lowData );
+      disposeStr( hiData );
+      Thing.Done;
+    end;
+
+  procedure Troll.Speak;
+    begin
+      if happy
+        then Output( HiData^ )
+        else Output( LowData^ );
+    end;
+
+  procedure Troll.Acept( gift: PThing );
+    begin
+      happy :=	upper(gift^.name^) = upper(likeness^);
+      if happy
+        then Output( _Very_very_thanks )
+        else Output( _Cool_thanks );
+    end;
+
+  function Troll.Die( weapon: string ): boolean;
+    begin
+      Output( _Ahhhhhh );
+      LivingThing.Die( weapon );
+    end;
+
+  { OpenLink }
+
+  constructor OpenLink.Init( nme, desc, pscm: string ; destt: PThing );
+    begin
+      Linking.Init( nme, desc, '', pscm, destt );
+      opn := TRUE;
+    end;
+
+  { DangerLink }
+
+  constructor DangerLink.Init( nm, desc, keyword, pscm, tlsm: string ; destt: PThing );
+    begin
+      Linking.Init( nm, desc, keyword, pscm, destt );
+      talisman := newStr( tlsm );
+    end;
+
+  destructor DangerLink.Done;
+    begin
+      disposeStr( talisman );
+      Linking.Done;
+    end;
+
+  procedure DangerLink.Pass( body: PThing );
+    var
+      auxP: PThing;
+    begin
+      auxP := PMan(body)^.bag^.Get( talisman^ );
+      if auxP = nil
+        then
+          begin
+            Output( _No_protection );
+            PMan(body)^.Die( '' );
+          end
+        else Linking.Pass( body );
+    end;
+
+  { DangerLink2 }
+
+  procedure DangerLink2.Pass( body: PThing );
+    var
+      auxP: PThing;
+    begin
+      auxP := PMan(body)^.bag^.Get( talisman^ );
+      if auxP <> nil
+        then
+          begin
+            Output( _Undesirable_object );
+            PMan(body)^.Die( '' );
+          end
+        else Linking.Pass( body );
+    end;
+
+  { Hidden }
+
+  constructor Hidden.Init( nm, desc, brk: string ; hdd: PThing );
+    begin
+      Thing.Init( nm, desc, succ(LWeight) );
+      breaker := newStr( brk );
+      hidd    := hdd;
+    end;
+
+  destructor Hidden.Done;
+    begin
+      disposeStr( breaker );
+      dispose( hidd, done );
+      Thing.Done;
+    end;
+
+  function Hidden.Break( weapon: string ): boolean;
+    begin
+      if breaker = nil
+	then Break := true
+	else Break := Equals( upper(breaker^), upper(weapon) );
+    end;
+
+  function Hidden.HiddenThing: PThing;
+    begin
+      HiddenThing := hidd
+    end;
+
+  { Guard }
+
+  constructor Guard.Init( nm, ds, cnf, wp: string );
+    begin
+      Thing.Init( nm, ds, succ(LWeight) );
+      confession := newStr( cnf );
+      lethalweap := newStr( wp );
+    end;
+
+  destructor Guard.Done;
+    begin
+      disposeStr( confession );
+      disposeStr( lethalweap );
+      Thing.Done;
+    end;
+
+  function Guard.Die( weapon: string ): boolean;
+    begin
+      if Equals(upper(lethalweap^), upper(weapon))
+        then
+          begin
+            Output( confession^ );
+            LivingThing.Die( weapon );
+          end
+        else Output( _Ja_ja_ja );
+      Die := dead;
+    end;
+
+  { Castle }
+
+  constructor Castle.Init( mman: PMan ; vc: PLexObj );
+    begin
+      Thing.Init( '', '', 0 );
+      m     := mman;
+      voc   := vc;
+      track := new( PHistColl, Init( 10, 5 ));
+    end;
+
+  destructor Castle.Done;
+    begin
+      dispose( track, done );
+    end;
+
+  procedure Castle.SaveTrack( f: string );
+    begin
+      if f = ''
+        then exit;
+      if track^.count > 1
+        then
+          begin
+            if not track^.Save( f )
+              then Output( _Output_error );
+          end
+        else Output( _Nothing_to_save );
+    end;
+
+  procedure Castle.Start;
+    begin
+      m^.Go( At(0) );
+    end;
+
+  procedure Castle.AskMan;
+    begin
+      Output( '' );
+      Output( _What_do_you_want_to_do );
+      wish := Tele^.Receive;
+      if wish <> ''
+	then wishback := wish;
+      wish := upper( wish );
+    end;
+
+  procedure Castle.ClearWish;
+    begin
+      Clear( wish );
+    end;
+
+  procedure Castle.MakeManWish;
+    var
+      rest   : string;
+      visBak : boolean;
+    begin
+      relevant := true;
+      Tele^.SetState( stThinking );
+      voc^.SetStr( wish );
+      voc^.SetToken;
+      voc^.SetStr( copy( wish, voc^.poss, length( wish ) - pred(voc^.poss) ));
+      case voc^.IsKWord( voc^.token ) of
+	vGo1, vGo2, vGo3, vGo4:
+	  begin
+	    visBak := visible;
+	    visible := false;
+	    Open;
+	    visible := visBak;
+	    Go;
+	  end;
+	vTake1, vTake2:
+	  Take;
+	vLeave1, vLeave2:
+	  Leave;
+	vOpen:
+	  Open;
+	vKill1, vKill2:
+	  Kill;
+	vPiss1, vPiss2:
+	  Output( 'Usted se asegura de que nadie est  mirando y... Ah, ­qu‚ alivio!' );
+	vCls:
+	  Output( 'Recuerde que se encuentra dentro de La Fortaleza, y no en el sistema operativo.' );
+	vLook1, vLook2:
+	  if voc^.EOS
+	    then Look
+	    else See;
+	vSee1, vSee2:
+	  See;
+	vBreak1, vBreak2, vBreak3:
+	  Break;
+	vAsk1, vAsk2:
+	  Ask;
+	vInvent:
+          begin
+            Inventary;
+	    relevant := false;
+          end;
+	vGive1, vGive2:
+	  Give;
+	vQuit1, vQuit2:
+          begin
+            m^.Die( '' );
+	    relevant := false
+          end;
+	vWeigh:
+	  begin
+	    m^.Weigh( voc^.st );
+	    relevant := false
+          end;
+	vExec:
+	  begin
+	    Output( _Enter_file_name );
+	    textcolor( 0 );
+	    textbackground( 7 );
+	    rest := Tele^.Receive;
+	    ExecTrack( rest );
+	    relevant := false;
+	  end;
+	vSave:
+	  begin
+	    Output( _Enter_file_name );
+	    rest := Tele^.Receive;
+	    if rest = ''
+	      then rest := TrkName;
+            SaveTrack( rest );
+	    relevant := false;
+	  end;
+	vPerc:
+	  begin
+	    Percent;
+	    relevant := false;
+	  end;
+	else
+          begin
+            if voc^.Token <> ''
+              then Output( _I_dont_understand );
+	    relevant := false;
+          end;
+      end;
+      if relevant and (wishback <> '') and not executing
+        then track^.Insert( newStr( wishback ));
+    end;
+
+  procedure Castle.Go;
+    begin
+      m^.WalkT( voc^.st );
+    end;
+
+  procedure Castle.Take;
+    begin
+      if voc^.IsKWord( voc^.st ) = vAll
+        then Output( _Take_one_thing_only )
+        else m^.Take( voc^.st )
+    end;
+
+  procedure Castle.Leave;
+    begin
+      if voc^.IsKWord( voc^.st ) = vAll
+        then m^.LeaveAll
+        else m^.Leave( voc^.st );
+    end;
+
+  procedure Castle.Open;
+    var
+      link: string;
+      b   : byte;
+    begin
+      link := '';
+      repeat
+        voc^.SetToken;
+	b := voc^.IsKWord( voc^.token );
+        if not( b in [vWith,vSay1,vSay2])
+	  then link :=	concat( link, _Blank, voc^.token );
+      until (b in [vWith,vSay1,vSay2]) or voc^.EOS;
+      system.delete( link, 1, 1 );
+      if not voc^.EOS
+	then m^.OpenD( link, copy( voc^.st, voc^.poss, length(voc^.st) - pred(voc^.poss) ))
+	else m^.OpenD( link, '' );
+    end;
+
+  procedure Castle.Kill;
+    var
+      who: string;
+      b  : byte;
+    begin
+      who := '';
+      repeat
+        voc^.SetToken;
+	b := voc^.IsKWord( voc^.token );
+        if b <> vWith
+	  then who := concat( who, _Blank, voc^.token );
+      until (b = vWith) or voc^.EOS;
+      system.delete( who, 1, 1 );
+      if not voc^.EOS
+	then m^.Kill( who, copy( voc^.st, voc^.poss, length(voc^.st) - pred(voc^.poss) ))
+	else m^.Kill( who, '' );
+    end;
+
+  procedure Castle.Percent;
+    var
+      s: string;
+    begin
+      str( round(m^.Visits/pred(count)*100), s );
+      Output( 'Usted ha avanzado un ' + s + '%' );
+    end;
+
+  procedure Castle.Look;
+    begin
+      m^.Look
+    end;
+
+  procedure Castle.See;
+    begin
+      m^.See( voc^.st );
+    end;
+
+  procedure Castle.Break;
+    var
+      what: string;
+      b   : byte;
+    begin
+      what := '';
+      repeat
+        voc^.SetToken;
+	b := voc^.IsKWord( voc^.token );
+        if b <> vWith
+	  then what :=	concat( what, _Blank, voc^.token );
+      until (b = vWith) or voc^.EOS;
+      system.delete( what, 1, 1 );
+      if not voc^.EOS
+	then m^.Break( what, copy( voc^.st, voc^.poss, length(voc^.st) - pred(voc^.poss) ))
+	else m^.Break( what, '' );
+    end;
+
+  procedure Castle.Ask;
+    begin
+      m^.Ask( voc^.st );
+    end;
+
+  procedure Castle.Inventary;
+    begin
+      m^.Inventary;
+    end;
+
+  procedure Castle.Give;
+    var
+      what: string;
+      b   : byte;
+    begin
+      what := '';
+      repeat
+        voc^.SetToken;
+	b := voc^.IsKWord( voc^.token );
+        if b <> vTo
+	  then what :=	concat( what, _Blank, voc^.token );
+      until (b = vTo) or voc^.EOS;
+      system.delete( what, 1, 1 );
+      if not voc^.EOS
+	then m^.Give( what, copy( voc^.st, voc^.poss, length(voc^.st) - pred(voc^.poss) ))
+	else m^.Give( what, '' );
+    end;
+
+  function Castle.ExecTrack( f: string ): boolean;
+    var
+      i 	  : word;
+      stop, VisBak: boolean;
+    begin
+      VisBak := Visible;
+      Output( 'Ejecutando el rastro...' );
+      if not VerboseExec
+	then Visible := false;
+      if f = ''
+        then exit;
+      if track <> nil
+	then dispose( track, done );
+      track :=	new( PHistColl, Init( 10, 5 ));
+      Tele^.SetHistory( PHistColl(track) );
+      if track^.Load( f )
+        then
+          begin
+	    i	      := 0;
+	    stop      := FALSE;
+	    executing := TRUE;
+            repeat
+	      wish := PString( track^.At(i) )^;
+              Output( '' );
+              Output( ' ' + wish );
+              ClearWish;
+              MakeManWish;
+              inc( i );
+            until Goal or IsOver or (i = track^.count);
+	    executing := FALSE
+          end
+	else
+	  begin
+	    Visible :=	true;
+	    Output( _File_not_found )
+	  end;
+      Visible := VisBak
+    end;
+
+  function Castle.Input: string;
     begin
     end;
 
-  procedure Man.Eat( what: string );
-   nt: string );
-   nt: string );
-   nt:te Man.Eat( what: strsth   aption
+  function Castle.IsOver: boolean;
+    begin
+      IsOver := m^.dead;
     end;
 
-  W^Ws      cedure .;
-
-    v     Rese s := s  if  dead
-     af   ent ;
+  function Castle.Goal: boolean;
     begin
-      id;
+      Goal := false
+    end;
 
-  procedure Man.Eat( what: string )A'
-		     0i       hat:d;
+  { Riddle Link }
 
-  proceduapides.' )
- pen );
-                    end
-        bersth   aption      elete( yides.' )
- pen );
-             f de    ;Y t := badfn.EaeP se s := s  if  dead
-        thensOSCylinders [L]:= (BufPtr^[Dummy] AND $ ent s
-    Tele: PHist@ent 0 s  if proc
-  ( f  d pen );
-          PThing(link) := curr^.
+  constructor RiddleLink.Init( nm, desc, rddle, answ, pscm: string ; destt: PThing );
+    begin
+      Linking.Init( nm, desc, '', pscm, destt );
+      riddle := newStr( rddle );
+      answer := newStr( answ );
+    end;
+
+  destructor RiddleLink.Done;
+    begin
+      disposeStr( riddle );
+      disposeStr( answer );
+    end;
+
+  function RiddleLink.Open( psKey: string ): boolean;
+    begin
+      if upper(psKey) = upper(answer^)
+        then
+          begin
+            Output( _You_solved_the_riddle );
+            Linking.Open( '' );
+	    Open := TRUE;
+          end
+        else
+          begin
+            if psKey = ''
+              then
+                begin
+                  Output( _Must_solve_riddle_first );
+                  Output( riddle^ );
+                end
+              else
+                begin
+                  Output( _Wrong_answer );
+                  Output( riddle^ );
+                end;
+	    Open := FALSE;
+          end
+    end;
+
+  function TDaugther.Die( weapon: string ): boolean;
+    begin
+      if upper(weapon) = upper(lethalweap^)
+        then
+          begin
+            Output( confession^ );
+            LivingThing.Die( weapon );
+          end
+        else
+          begin
+            Output( 'Usted fracasa en su intento. La enorme serpiente se lanza sobre usted '+
+                    'y lo devora en pocos segundos.' );
+            ManX^.Die( '' );
+          end;
+      Die := dead;
+    end;
+
+end.
