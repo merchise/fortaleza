@@ -122,45 +122,163 @@ CrtWriteStr:
         TEST    AL,1
         JNE     @@2
         CLI
-@@3SI,OFFSET CS:CrtWriteChar
-        CALL    CrtWrite
-  e7rLFs r  MOV     AH,[BP+6]
-        LDS     SI,[BP+8]
-    S
-;qE S
-       POP     BPTAL  DH
-      Doe     PUSH    JNE     @@2
-        CLI
-kb AH Y         SI,[BP+8]
-    S
-;qE S
-       POP     BPTAL  DH
-      Doe      POP     BPTAL  DH
-      Doe     PUSH    JNE     @@2
-        CLI
-kb AH Y         SI,[BP+8]
-    S
-;qE S
-       POP     BPTAL  DH
-      Doe      POP     BPTAL  DH
-      Doe     PUSH    JNE     @@2
-        CLI
-kb AH Y         SI,[BP+ T
-      Doe   BPTATAL  DHSrXS     PTa o72E:nHL rLFs r  MOVS rLFTAL  DHtWriteChar c: String TL    CrtWri TcIa B   @@2rf  S,aktr )(C      CrtWri T  z
-4z
+@@3:    IN      AL,DX
+        TEST    AL,1
+        JE      @@3
+        MOV     AX,BX
+        STOSW
+        STI
+        LOOP    @@1
+        POP     DS
+        RET
+@@4:    LODSB
+        STOSW
+        LOOP    @@4
+        POP     DS
+        RET
 
-kb AH YttVrcA cIa BeLN TAL  DHSrHT TAL  DHSo7L  DHSrHT 
-      Doe   BP     PUSH    JNE     @@2
-      BE o72      Doe      POP     BPTAL  T@Arcre(C           Doe      TES     c       Doe     4R 
-,1 c       Doe     4R 
-,1 c       Doe  rS:4L@4 SJi @@2r r  SN k     mnPTAL  DH
-      Doe     PUSH    JNE     @@2
-           1 1    DH
-  oe     4
-okD 4R 
-,1SI,[BP iC S,1SI       D@2
-       ASaN:yL
-esTAL  DHSo7L  DHSrHT 
-      Doe   BP TXr (4A   @@2
-   Tc4@z
-o
+; Write characters to screen
+
+CrtWriteChar:
+
+        MOV     AL,[BP+8]
+        MOV     AH,[BP+6]
+        JC      @@4
+        MOV     BX,AX
+@@1:    IN      AL,DX
+        TEST    AL,1
+        JNE     @@1
+        CLI
+@@2:    IN      AL,DX
+        TEST    AL,1
+        JE      @@2
+        MOV     AX,BX
+        STOSW
+        STI
+        LOOP    @@1
+        RET
+@@4:    REP     STOSW
+        RET
+
+; Read window buffer from screen
+
+CrtReadWin:
+
+        PUSH    DS
+        PUSH    ES
+        POP     DS
+        MOV     SI,DI
+        LES     DI,[BP+6]
+        CALL    CrtCopyWin
+        MOV     [BP+6],DI
+        POP     DS
+        RET
+
+; Write window buffer to screen
+
+CrtWriteWin:
+
+        PUSH    DS
+        LDS     SI,[BP+6]
+        CALL    CrtCopyWin
+        MOV     [BP+6],SI
+        POP     DS
+        RET
+
+; Window buffer copy routine
+
+CrtCopyWin:
+
+        JC      @@4
+@@1:    LODSW
+        MOV     BX,AX
+@@2:    IN      AL,DX
+        TEST    AL,1
+        JNE     @@2
+        CLI
+@@3:    IN      AL,DX
+        TEST    AL,1
+        JE      @@3
+        MOV     AX,BX
+        STOSW
+        STI
+        LOOP    @@1
+        RET
+@@4:    REP     MOVSW
+        RET
+
+; Do screen operation
+; In    CL = Buffer length
+;       SI = Write procedure pointer
+;       BP = Stack frame pointer
+
+CrtWrite:
+
+        MOV     DL,[BP+14]
+        DEC     DL
+        ADD     DL,WindMin.X
+        JC      CrtExit
+        CMP     DL,WindMax.X
+        JA      CrtExit
+        MOV     DH,[BP+12]
+        DEC     DH
+        ADD     DH,WindMin.Y
+        JC      CrtExit
+        CMP     DH,WindMax.Y
+        JA      CrtExit
+        XOR     CH,CH
+        JCXZ    CrtExit
+        MOV     AL,WindMax.X
+        SUB     AL,DL
+        INC     AL
+        CMP     CL,AL
+        JB      CrtBlock
+        MOV     CL,AL
+
+; Do screen operation
+; In    CL = Buffer length
+;       DX = CRT coordinates
+;       SI = Procedure pointer
+
+CrtBlock:
+
+        MOV     AX,40H
+        MOV     ES,AX
+        MOV     AL,DH
+        MUL     ES:CrtWidth
+        XOR     DH,DH
+        ADD     AX,DX
+        SHL     AX,1
+        MOV     DI,AX
+        MOV     AX,0B800H
+        CMP     ES:CrtMode,7
+        JNE     @@1
+        MOV     AH,0B0H
+@@1:    MOV     ES,AX
+        MOV     DX,03DAH
+        CLD
+        CMP     CheckSnow,1
+        JMP     SI
+
+; Exit from screen operation
+
+CrtExit:
+
+        RET
+
+; function WinSize: Word;
+
+        PUBLIC  WinSize
+
+WinSize:
+
+        MOV     AX,WindMax
+        SUB     AX,WindMin
+        ADD     AX,101H
+        MUL     AH
+        SHL     AX,1
+        RETF
+
+CODE    ENDS
+
+        END
