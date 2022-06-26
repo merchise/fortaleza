@@ -1,0 +1,29 @@
+REM Build assembler source code
+tasm SE.ASM
+tasm WIN.ASM
+
+REM Build pascal code
+tpc -$G+ -B -UC:\TP\UNITS ADVIC.PAS
+tpc -$G+ -B -UC:\TP\UNITS CASTLES.PAS
+tpc -$G+ -B -UC:\TP\UNITS CGATTY.PAS
+tpc -$G+ -B -UC:\TP\UNITS CMDLINE.PAS
+tpc -$G+ -B -UC:\TP\UNITS CRT.PAS
+tpc -$G+ -B -UC:\TP\UNITS EGATTY.PAS
+tpc -$G+ -B -UC:\TP\UNITS EQSTRING.PAS
+tpc -$G+ -B -UC:\TP\UNITS FORT1.PAS
+tpc -$G+ -B -UC:\TP\UNITS FORT2.PAS
+tpc -$G+ -B -UC:\TP\UNITS HISTTTY.PAS
+tpc -$G+ -B -UC:\TP\UNITS INSTR1.PAS
+tpc -$G+ -B -UC:\TP\UNITS INSTR2.PAS
+tpc -$G+ -B -UC:\TP\UNITS LETTERS.PAS
+tpc -$G+ -B -UC:\TP\UNITS LEXIC.PAS
+tpc -$G+ -B -UC:\TP\UNITS PRESENT1.PAS
+tpc -$G+ -B -UC:\TP\UNITS PRESENT2.PAS
+tpc -$G+ -B -UC:\TP\UNITS SCROLLER.PAS
+tpc -$G+ -B -UC:\TP\UNITS SOUNDS.PAS
+tpc -$G+ -B -UC:\TP\UNITS STRCOLL.PAS
+tpc -$G+ -B -UC:\TP\UNITS TELETYPE.PAS
+tpc -$G+ -B -UC:\TP\UNITS TTY.PAS
+tpc -$G+ -B -UC:\TP\UNITS UTIL.PAS
+tpc -$G+ -B -UC:\TP\UNITS VOCABL.PAS
+tpc -$G+ -B -UC:\TP\UNITS WIN.PAS
